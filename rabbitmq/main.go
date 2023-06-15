@@ -9,23 +9,21 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func SendingData(body interface{}) {
+func InitToSendData() (*amqp.Connection, *amqp.Channel, *amqp.Queue, error) {
 	
 	rabbitMqUrl := os.Getenv("RABBIT_MQ_URL")
 	
 	conn, err := amqp.Dial(rabbitMqUrl)
 	if err != nil {
 		log.Println("Failed to connect to RabbitMQ", err)
-		return
+		return nil, nil, nil, err
 	}
-	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Println("Failed to open a channel", err)
-		return
+		return nil, nil, nil, err
 	}
-	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
 		"eth_queue", // name of the queue
@@ -35,14 +33,19 @@ func SendingData(body interface{}) {
 		false,         // no-wait (wait for a confirmation from the server)
 		nil,           // arguments
 	)
-	
+
 	if err != nil {
 		log.Println("Failed to declare a queue", err)
-		return
+		return nil, nil, nil, err
 	}
 
-	// Create a message publishing function
+
+	return conn, ch, &q, nil
+}
+
+func SendingData(body interface{}, conn *amqp.Connection, ch *amqp.Channel, q amqp.Queue) {
 	
+	// Create a message publishing function
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
 		log.Println("Failed to Marshal Json")

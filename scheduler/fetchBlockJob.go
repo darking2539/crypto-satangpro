@@ -63,33 +63,34 @@ func FetchBlockJob() {
 }
 
 func SendAllDataToRabbit(totalTransaction uint64, blockNoHexString string, client *rpc.Client) {
-	
+
 	var wg sync.WaitGroup
+
+	conn, ch, q, err := rabbitmq.InitToSendData()
+	if err != nil {
+		log.Panicln(err.Error())
+		return
+	}
+	defer conn.Close()
+	defer ch.Close()
 
 	for i := uint64(0); i < totalTransaction; i++ {
 		wg.Add(1)
 		go func(index uint64) {
 			defer wg.Done()
-			SendingDataToRabbit(blockNoHexString, index, client)
-		} (i)
+			var tx models.TransactionResponse
+			err := client.Call(&tx, "eth_getTransactionByBlockNumberAndIndex", blockNoHexString, utils.IntToHex(index))
+
+			if err != nil {
+				log.Panicln(err.Error())
+			}
+
+			rabbitmq.SendingData(tx, conn, ch, *q)
+		}(i)
 	}
 
 	wg.Wait()
 
 	bigInt, _ := utils.HexToBigInt(blockNoHexString)
 	log.Println("Sucessful Block:", bigInt.Uint64(), "total Transaction:", totalTransaction)
-}
-
-func SendingDataToRabbit(blockNoHexString string, index uint64, client *rpc.Client)  {
-	
-	var tx models.TransactionResponse
-	err := client.Call(&tx, "eth_getTransactionByBlockNumberAndIndex", blockNoHexString, utils.IntToHex(index))
-	
-	if err != nil {
-		log.Panicln(err.Error())
-	}
-
-	rabbitmq.SendingData(tx)
-
-
 }
