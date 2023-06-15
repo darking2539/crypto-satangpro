@@ -22,14 +22,14 @@ func IntToHex(num uint64) string {
 }
 
 
-func CheckAddressIsExists(stringAddressFrom string, stringAddressTo string, arrayAddressString []string) bool {
+func CheckAddressIsExists(stringAddressFrom string, stringAddressTo string, arrayAddressString []string) string {
 
 	for _, v := range arrayAddressString {
 		if strings.EqualFold(v, stringAddressFrom) || strings.EqualFold(v, stringAddressTo) {
-			return true
+			return v
 		}
 	}
 
-	return false
+	return ""
 
 }

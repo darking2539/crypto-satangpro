@@ -33,8 +33,10 @@ func RecordDataService(bodyResp []byte) {
 	addressString := os.Getenv("ADDRESS_MONITOR")
 	addressArray := strings.Split(addressString, ",")
 
-	if !utils.CheckAddressIsExists(transactionData.From, transactionData.To, addressArray) {
-		//if not exist return
+	addressMap := utils.CheckAddressIsExists(transactionData.From, transactionData.To, addressArray)
+	
+	if addressMap == "" {
+		//address not exist in array
 		return
 	}
 
@@ -61,6 +63,10 @@ func RecordDataService(bodyResp []byte) {
 		log.Panicln(err.Error())
 		return
 	}
+
+	
+	payload := fmt.Sprintf("\nAddress: %s\n\nBlockNo: %d\nFrom: %s\nTo: %s\nvalue: %s\nGas: %s", addressMap, bigIntBlockNo.Uint64(), transactionData.From, transactionData.To, transactionData.Value, transactionData.Gas)
+	utils.LineNotify(payload)
 
 	fmt.Println("record sucessful")
 	

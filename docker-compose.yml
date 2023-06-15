@@ -50,6 +50,7 @@ services:
       - MONGODB_URI=mongodb://admin:password@mongodb:27017/admin
       - DATABASE_NAME=admin
       - ADDRESS_MONITOR=0x28c6c06298d514db089934071355e5743bf21d60
+      - LINE_NOTIFY_TOKEN=Zo7eKnA2i2Zp1YQ8Ev07dIqBeSayWxvkiDlj0UewekL
     networks:
       - backend
     restart: unless-stopped
