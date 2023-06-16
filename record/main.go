@@ -15,6 +15,7 @@ import (
 
 func RunRecord() {
 	
+	InitlizeAddressToDB()
 	rabbitmq.InitSubcribeCode(RecordDataService)
 
 }
@@ -24,18 +25,19 @@ func RecordDataService(bodyResp []byte) {
 	transactionData := models.TransactionResponse{}
 	err := json.Unmarshal(bodyResp, &transactionData)
 	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
+	//check address to monitoring
+	addressMonitor, repoErr := repositories.CheckUserExistsRepo(transactionData.From, transactionData.To)
+	if repoErr != nil {
+		fmt.Println("abosszzzz222")
 		log.Panicln(err.Error())
 		return
 	}
 
-	//get address to monitoring
-	
-	addressString := os.Getenv("ADDRESS_MONITOR")
-	addressArray := strings.Split(addressString, ",")
-
-	addressMap := utils.CheckAddressIsExists(transactionData.From, transactionData.To, addressArray)
-	
-	if addressMap == "" {
+	if addressMonitor == "" {
 		//address not exist in array
 		return
 	}
@@ -72,8 +74,30 @@ func RecordDataService(bodyResp []byte) {
 	}
 
 	
-	payload := fmt.Sprintf("\nAddress: %s\n\nBlockNo: %d\nFrom: %s\nTo: %s\nvalue: %s\nGas: %s", addressMap, bigIntBlockNo.Uint64(), transactionData.From, transactionData.To, transactionData.Value, transactionData.Gas)
+	payload := fmt.Sprintf("\nAddress: %s\n\nBlockNo: %d\nFrom: %s\nTo: %s\nvalue: %s\nGas: %s", addressMonitor, bigIntBlockNo.Uint64(), transactionData.From, transactionData.To, transactionData.Value, transactionData.Gas)
 	utils.LineNotify(payload)
 
 	fmt.Println("record sucessful")	
+}
+
+func InitlizeAddressToDB() {
+	
+	addressString := os.Getenv("ADDRESS_MONITOR")
+	addressArray := strings.Split(addressString, ",")
+
+	for _, address := range addressArray {
+		
+		lowerAddress := strings.ToLower(address)
+
+		dao := models.UserModel{
+			Address: lowerAddress,
+			CreatedBy: "Initialize",
+			CreatedDate: time.Now(),
+		}
+	
+		_, err := repositories.CreateUserRepo(dao)
+		if err != nil {
+			log.Println("this address registed already", err.Error())
+		}
+	}
 }

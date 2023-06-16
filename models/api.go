@@ -21,3 +21,8 @@ type TransactionData struct {
 	Gas              string `json:"gas"`
 	GasPrice         string `json:"gasPrice"`
 }
+
+type AddUserRequest struct {
+	Email   string `json:"email"`
+	Address string `json:"address"`
+}

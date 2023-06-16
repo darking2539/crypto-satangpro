@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -79,4 +80,24 @@ func GetMongoDB() (db *mongo.Database, err error) {
 	}
 	db = mongoDB
 	return
+}
+
+func Healthz(c *gin.Context) {
+
+	db, err := GetMongoDB()
+	if err != nil {
+		c.JSON(400, gin.H{"result": "Connect Unsucessful"})
+		return
+	}
+
+	client := db.Client()
+
+	err = client.Ping(context.Background(), nil)
+
+	if err != nil {
+		c.JSON(400, gin.H{"result": "Connect Unsucessful"})
+		return
+	}
+
+	c.JSON(200, gin.H{"result": "Connect Sucessful"})
 }

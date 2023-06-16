@@ -5,6 +5,7 @@ import (
 	"crypto-satangpro/repositories"
 	"encoding/json"
 	"strings"
+	"time"
 
 	"github.com/darahayes/go-boom"
 	"github.com/gin-gonic/gin"
@@ -44,6 +45,34 @@ func GetTransactionListService(c *gin.Context) {
 		Data: dataResp,
 		Pagination: paigination,
 	}
+	
+	c.Writer.Header().Set("Content-Type", "application/json");
+	json.NewEncoder(c.Writer).Encode(&resp);
+}
+
+func AddAddressService(c *gin.Context) {
+
+	var request models.AddUserRequest
+	if payloadErr := c.ShouldBindJSON(&request); payloadErr != nil {
+		boom.BadRequest(c.Writer, payloadErr.Error());
+		return
+	}
+	
+	lowerAddress := strings.ToLower(request.Address)
+
+	dao := models.UserModel{
+		Address: lowerAddress,
+		CreatedBy: request.Email,
+		CreatedDate: time.Now(),
+	}
+
+	response, err := repositories.CreateUserRepo(dao)
+	if err != nil {
+		boom.BadRequest(c.Writer, err.Error());
+		return
+	}
+
+	resp := response
 	
 	c.Writer.Header().Set("Content-Type", "application/json");
 	json.NewEncoder(c.Writer).Encode(&resp);
