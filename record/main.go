@@ -46,9 +46,16 @@ func RecordDataService(bodyResp []byte) {
 		return
 	}
 
+	bigIntIndex, err := utils.HexToBigInt(transactionData.TransactionIndex)
+	if err != nil {
+		log.Panicln(err.Error())
+		return
+	}
+
 	//prepare Data to save db
 	dao := models.TransactionModel{
 		BlockNo: bigIntBlockNo.Uint64(),
+		TransactionIndex: bigIntIndex.Uint64(),
 		Hash: transactionData.Hash,
 		From: transactionData.From,
 		To: transactionData.To,
@@ -68,6 +75,5 @@ func RecordDataService(bodyResp []byte) {
 	payload := fmt.Sprintf("\nAddress: %s\n\nBlockNo: %d\nFrom: %s\nTo: %s\nvalue: %s\nGas: %s", addressMap, bigIntBlockNo.Uint64(), transactionData.From, transactionData.To, transactionData.Value, transactionData.Gas)
 	utils.LineNotify(payload)
 
-	fmt.Println("record sucessful")
-	
+	fmt.Println("record sucessful")	
 }

@@ -55,6 +55,21 @@ services:
       - backend
     restart: unless-stopped
 
+  api-service:
+    container_name: api-service
+    image: crypto-satangpro
+    build: .
+    environment:
+      - MODE=api
+      - MONGODB_URI=mongodb://admin:password@mongodb:27017/admin
+      - DATABASE_NAME=admin
+      - PORT=8080
+    networks:
+      - backend
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
 networks:
   backend:
     driver: bridge

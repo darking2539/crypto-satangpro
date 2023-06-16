@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto-satangpro/api"
 	"crypto-satangpro/db"
 	"crypto-satangpro/record"
 	"crypto-satangpro/scheduler"
@@ -19,7 +20,7 @@ func main() {
 	if mode == "" {
 		mode = os.Args[1] //for dev
 	}
-	
+
 	if mode == "job" {
 		log.Println("run scheduler")
 		scheduler.RunScheduler()
@@ -28,6 +29,8 @@ func main() {
 		log.Println("run monitoring")
 		db.InitMongoDB()
 		record.RunRecord()
+	} else if mode == "api" {
+		api.InitGinFrameWork()
 	} else {
 		log.Fatal("mode not found")
 	}
