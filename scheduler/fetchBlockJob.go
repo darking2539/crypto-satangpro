@@ -4,6 +4,7 @@ import (
 	"crypto-satangpro/models"
 	"crypto-satangpro/rabbitmq"
 	"crypto-satangpro/utils"
+	"fmt"
 	"os"
 	"sync"
 
@@ -58,6 +59,8 @@ func FetchBlockJob() {
 		//this block fetch already
 		return
 	}
+
+	fmt.Println(totalTransactionInt)
 
 	SendAllDataToRabbit(totalTransactionInt.Uint64(), blockNo, client)
 }
